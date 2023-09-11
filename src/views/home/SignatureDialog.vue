@@ -43,7 +43,7 @@
         <el-dialog
           class="signDialog"
           :visible.sync="dialogVisible"
-          :width="isMobile ? '300px' : '580px'"
+          :width="canvasSetting.width"
           center
           lock-scroll
           appendToBody
@@ -112,11 +112,11 @@ export default {
     /**
      * 桌機 & 手機版 canvas畫布設定
      */
-    // canvasSetting() {
-    //   return this.isMobile
-    //     ? { width: 245, height: 200 }
-    //     : { width: 525, height: 210 };
-    // },
+    canvasSetting() {
+      return this.isMobile
+        ? { width: `${window.innerWidth - 10}px`, height: "100%" }
+        : { width: "800px" };
+    },
   },
   methods: {
     /**
@@ -144,7 +144,8 @@ export default {
      */
     signatureConfirm() {
       const signature = this.$refs.signatureCanvas.getSignature();
-      this.signatureImg = [...this.signatureImg, { src: signature }];
+      if (!isEmpty(signature))
+        this.signatureImg = [...this.signatureImg, { src: signature }];
 
       this.dialogVisible = false;
     },
@@ -174,6 +175,7 @@ export default {
   flex-wrap: nowrap;
 }
 .signDialog {
+  height: 100%;
   .signDialog__label {
     font-weight: 700;
     font-size: 16px;

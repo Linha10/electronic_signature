@@ -2,6 +2,7 @@
 import SmoothSignature from "smooth-signature";
 import mobile from "is-mobile";
 import { isFunction } from "lodash";
+//TODO 針對QRcode 掃描進入畫面調整Dialog
 export default {
   props: {
     // 取得手機版畫面狀態
@@ -74,7 +75,7 @@ export default {
         };
       }
       // 手機版直畫面 or 桌機版網頁
-      let defaultMinSize = this.isMobile ? 300 : 500;
+      let defaultMinSize = this.isMobile ? 300 : 700;
       // 畫面最小寬與預設寬取最低
       this.width = Math.min(window.innerWidth, defaultMinSize);
       return {
@@ -93,7 +94,7 @@ export default {
       const options = {
         ...width_height,
         // 畫布倍率(影響簽名圖檔畫質)
-        scale: 2,
+        scale: 4,
         // 最小筆寬
         minWidth: 2,
         // 最大筆寬
@@ -127,9 +128,18 @@ export default {
      * 取得canvas圖片
      */
     getSignature() {
-      const image = this.signature.getPNG();
+      const empty = this.signature.isEmpty();
+      if (!empty) {
+        if (this.isMobile && this.isFull) {
+          //TODO 調整傾斜度數
+          this.signature.getRotateCanvas(90);
+        }
 
-      return image;
+        const image = this.signature.toDataURL();
+
+        return image;
+      }
+      return {};
     },
     /**
      * 手機版時，是否為全螢幕
@@ -161,7 +171,7 @@ export default {
      */
     renderActionBtns() {
       return (
-        <div>
+        <div class="canvas__actions">
           <el-button
             type="warning"
             size="mini"
@@ -179,6 +189,13 @@ export default {
             }}
           >
             清除
+          </el-button>
+          <el-button
+            onClick={() => {
+              this.handleQRcode();
+            }}
+          >
+            API
           </el-button>
 
           {
@@ -207,7 +224,7 @@ export default {
      */
     renderPenColorList() {
       return (
-        <div>
+        <div stlye="margin: 5px">
           <el-tooltip effect="dark" content="線條顏色" placement="top">
             <el-radio-group
               vModel={this.currentColor}
@@ -251,7 +268,7 @@ export default {
         {this.isMobile && this.isFull ? (
           <div class="canvas--extend">
             <div class="canvas-contanier"> {this.renderCanvas()} </div>
-            <div class="actionsWrap">{this.renderTool()}</div>
+            <div class="actions--extend">{this.renderTool()}</div>
           </div>
         ) : (
           <div class="canvas--wrap">
@@ -300,7 +317,7 @@ export default {
     padding: 15px;
     display: flex;
     justify-content: center;
-    .actionsWrap {
+    .actions--extend {
       width: 50px;
       display: flex;
       justify-content: center;
@@ -325,8 +342,16 @@ export default {
       transform: rotate(90deg);
     }
   }
+
+  .canvas-contanier {
+    margin: 15px;
+  }
 }
 .is-desktop {
+  .canvas--wrap {
+    display: flex;
+    flex-direction: column;
+  }
   & .canvas-outer {
     background: rgb(245, 245, 245);
     border-radius: 4px;
@@ -339,9 +364,13 @@ export default {
       border: 2px solid rgb(229, 229, 229);
     }
   }
-}
-
-.canvas-contanier {
-  margin: 15px;
+  .canvas__tools {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    .canvas__actions {
+      margin: 0px 15px;
+    }
+  }
 }
 </style>

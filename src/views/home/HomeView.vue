@@ -5,7 +5,6 @@
 </template>
 
 <script>
-// import EleSingture from "@/components/EleSingture";
 import SignatureDialog from "@/views/home/SignatureDialog";
 export default {
   name: "HomeView",
