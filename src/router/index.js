@@ -1,6 +1,8 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import HomeView from "../views/home/HomeView.vue";
+import HomeView from "@/views/home/HomeView.vue";
+import MobileSignature from "@/views/home/MobileSignature";
+import WindowQRcode from "@/views/home/WindowQRcode";
 
 Vue.use(VueRouter);
 
@@ -9,6 +11,16 @@ const routes = [
     path: "/",
     name: "home",
     component: HomeView,
+  },
+  {
+    name: "windowQRcode",
+    path: "/window/qrcode/:id?",
+    component: WindowQRcode,
+  },
+  {
+    name: "mobileSignature",
+    path: "/mobile/signature/:id?",
+    component: MobileSignature,
   },
 ];
 

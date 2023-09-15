@@ -2,25 +2,45 @@
 import SmoothSignature from "smooth-signature";
 import mobile from "is-mobile";
 import { isFunction } from "lodash";
-//TODO 針對QRcode 掃描進入畫面調整Dialog
+
 export default {
+  //TODO 直畫面的切版設定
   props: {
-    // 取得手機版畫面狀態
-    getIsFull: {
-      type: Function,
-      default: null,
+    // 直畫面展示鈕
+    showPortrait: {
+      type: Boolean,
+      default: false,
+    },
+    // 可選色
+    colors: {
+      type: Array,
+      default: () => [
+        { name: "Black", code: "#000000" },
+        { name: "skyblue", code: "#1890ff" },
+        { name: "Red", code: "#FF2D2D" },
+      ],
+    },
+    // canvas設定
+    options: {
+      type: Object,
+      default: () => {
+        return {
+          // 畫布倍率(影響簽名圖檔畫質)
+          scale: 1,
+          // 最小筆寬
+          minWidth: 4,
+          // 最大筆寬
+          maxWidth: 6,
+          // 筆色
+          color: "#000000",
+        };
+      },
     },
   },
   data() {
     return {
       // 簽名畫布
       signature: null,
-      // 顏色列
-      colorList: [
-        { name: "Black", code: "#000000" },
-        { name: "skyblue", code: "#1890ff" },
-        { name: "Red", code: "#FF2D2D" },
-      ],
       // 寬度
       width: 0,
       // 手機版
@@ -74,10 +94,9 @@ export default {
           height: window.innerHeight - 50,
         };
       }
-      // 手機版直畫面 or 桌機版網頁
-      let defaultMinSize = this.isMobile ? 300 : 700;
-      // 畫面最小寬與預設寬取最低
-      this.width = Math.min(window.innerWidth, defaultMinSize);
+
+      // 畫面最小寬與預設寬取最低 (手機版且直畫面 || 桌機版)
+      this.width = this.isMobile ? Math.min(window.innerWidth, 300) : 700;
       return {
         width: this.width,
         height: 210,
@@ -90,49 +109,54 @@ export default {
       const canvas = this.$refs.canvas || document.querySelector("canvas");
 
       const width_height = this.setCanvasRange();
-
+      // 配置canvas 設定
       const options = {
         ...width_height,
-        // 畫布倍率(影響簽名圖檔畫質)
-        scale: 4,
-        // 最小筆寬
-        minWidth: 2,
-        // 最大筆寬
-        maxWidth: 5,
-        // 筆色
-        color: this.colorList[0].code,
+        ...this.options,
       };
 
       this.signature = new SmoothSignature(canvas, options);
     },
     /**
-     * 清空canvas
+     * 重置簽名
+     *
+     * @param {Function} action 函式
      */
-    handleReset() {
-      this.signature.clear();
+    handleReset(action) {
+      // 重置簽名
+      const doReset = this.signature.clear;
+      isFunction(action) ? action(doReset) : doReset();
     },
     /**
      * 返回上一步
+     *
+     * @param {Function} action 函式
      */
-    handleUndo() {
-      this.signature.undo();
+    handleUndo(action) {
+      const doUndo = this.signature.undo;
+      isFunction(action) ? action(doUndo) : doUndo();
     },
     /**
      * 設定當前筆色
      */
     handleColor(color) {
       this.signature.color = color;
-      this.currentPenColor = color;
     },
     /**
-     * 取得canvas圖片
+     * 取得canvas簽名圖片
+     *
+     *  @param {Function|null} method 自訂方法
      */
-    getSignature() {
+    getSignature(method = null) {
+      if (isFunction(method)) {
+        method(this.signature);
+        return;
+      }
+
       const empty = this.signature.isEmpty();
       if (!empty) {
         if (this.isMobile && this.isFull) {
-          //TODO 調整傾斜度數
-          this.signature.getRotateCanvas(90);
+          this.signature = this.signature.getRotateCanvas(-90);
         }
 
         const image = this.signature.toDataURL();
@@ -146,9 +170,6 @@ export default {
      */
     showFull() {
       this.isFull = !this.isFull;
-      if (isFunction(this.getIsFull)) {
-        this.getIsFull(this.isFull);
-      }
 
       this.init();
     },
@@ -172,48 +193,51 @@ export default {
     renderActionBtns() {
       return (
         <div class="canvas__actions">
-          <el-button
-            type="warning"
-            size="mini"
-            onClick={() => {
-              this.handleUndo();
-            }}
-          >
-            返回上一步
-          </el-button>
-          <el-button
-            type="danger"
-            size="mini"
-            onClick={() => {
-              this.handleReset();
-            }}
-          >
-            清除
-          </el-button>
-          <el-button
-            onClick={() => {
-              this.handleQRcode();
-            }}
-          >
-            API
-          </el-button>
-
-          {
-            // 手機版時顯示全螢幕設定鈕
-            this.isMobile ? (
+          {this.$scopedSlots?.leftTool ? (
+            // 左側插槽
+            this.$scopedSlots.leftTool({
+              reset: this.handleReset,
+              undo: this.handleUndo,
+            })
+          ) : (
+            <div>
               <el-button
-                type="primary"
+                type="warning"
                 size="mini"
                 onClick={() => {
-                  this.showFull();
+                  this.handleUndo();
                 }}
               >
-                {!this.isFull ? "全螢幕" : "關閉全螢幕"}
+                返回上一步
               </el-button>
-            ) : (
-              ""
-            )
-          }
+              <el-button
+                type="danger"
+                size="mini"
+                onClick={() => {
+                  this.handleReset();
+                }}
+              >
+                清除
+              </el-button>
+
+              {
+                // 手機版時顯示全螢幕設定鈕
+                this.isMobile && this.showPortrait ? (
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    onClick={() => {
+                      this.showFull();
+                    }}
+                  >
+                    {!this.isFull ? "全螢幕" : "關閉全螢幕"}
+                  </el-button>
+                ) : (
+                  ""
+                )
+              }
+            </div>
+          )}
         </div>
       );
     },
@@ -224,14 +248,20 @@ export default {
      */
     renderPenColorList() {
       return (
-        <div stlye="margin: 5px">
-          <el-tooltip effect="dark" content="線條顏色" placement="top">
+        <div style="margin: 5px">
+          {this.$scopedSlots?.rightTool ? (
+            // 右側插槽
+            this.$scopedSlots.rightTool({
+              reset: this.handleReset,
+              undo: this.handleUndo,
+            })
+          ) : (
             <el-radio-group
               vModel={this.currentColor}
               size="mini"
               fill={`${this.currentColor}`}
             >
-              {this.colorList.map((item) => {
+              {this.colors.map((item) => {
                 return (
                   <el-radio-button
                     key={item.code}
@@ -243,7 +273,7 @@ export default {
                 );
               })}
             </el-radio-group>
-          </el-tooltip>
+          )}
         </div>
       );
     },
@@ -265,17 +295,20 @@ export default {
   render() {
     return (
       <div class={`${this.isMobile ? "is-mobile" : "is-desktop"}`}>
-        {this.isMobile && this.isFull ? (
-          <div class="canvas--extend">
-            <div class="canvas-contanier"> {this.renderCanvas()} </div>
-            <div class="actions--extend">{this.renderTool()}</div>
-          </div>
-        ) : (
-          <div class="canvas--wrap">
-            <div class="canvas-contanier"> {this.renderCanvas()}</div>
-            {this.renderTool()}
-          </div>
-        )}
+        {
+          // 為行動裝置且全(橫)螢幕
+          this.isMobile && this.isFull ? (
+            <div class="canvas--extend">
+              <div class="canvas-contanier"> {this.renderCanvas()} </div>
+              <div class="actions--extend">{this.renderTool()}</div>
+            </div>
+          ) : (
+            <div class="canvas--wrap">
+              <div class="canvas-contanier"> {this.renderCanvas()}</div>
+              {this.renderTool()}
+            </div>
+          )
+        }
       </div>
     );
   },
@@ -347,6 +380,7 @@ export default {
     margin: 15px;
   }
 }
+
 .is-desktop {
   .canvas--wrap {
     display: flex;
@@ -368,6 +402,7 @@ export default {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+    align-items: center;
     .canvas__actions {
       margin: 0px 15px;
     }
