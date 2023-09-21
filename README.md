@@ -8,18 +8,18 @@
 
 - 在QRcode圖片放入下方的空白格內，會產生QRcode對應的資料
 - 
-[Dialog式QRcode](https://github.com/Linha10/electronic_signature/assets/98566067/3a3c87e0-bab8-44d3-a5bd-2935253299f1)
+[Dialog式QRcode](https://cdn.discordapp.com/attachments/677538517949218820/1154360401740451840/2023-09-21_6.05.02.png)
 
 ## 新視窗式QRcode
 
 - 整體類似於dialog式。
 - 試做了有背景圖的QRcode。
 
-[新視窗式QRcode](https://github.com/Linha10/electronic_signature/assets/98566067/721a5a4a-0714-4b20-85b5-48645a623a52)
+[新視窗式QRcode](https://cdn.discordapp.com/attachments/677538517949218820/1154360421864722512/2023-09-21_6.07.23.png)
 
 ## 手機版簽名
 
-[手機版截圖](https://github.com/Linha10/electronic_signature/assets/98566067/174c5ae9-208c-4ee0-bf7f-7db883f73ea2)
+[手機版截圖](https://cdn.discordapp.com/attachments/677538517949218820/1154360435806568458/2023-09-21_6.02.44.png)
 
 
 
