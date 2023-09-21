@@ -1,13 +1,16 @@
 import RequestHttp from "@/api/common-api";
 
 const REST = new RequestHttp();
-const baseURL = "http://localhost:1929";
+const baseURL = "http://localhost:3030";
 
 export default {
-  getQRcode(uuid) {
-    return REST.post(`${baseURL}/qrcode`, uuid);
-  },
-  getTEST() {
-    return REST.get(`${baseURL}/qrcode`);
+  /**
+   * 取得QRcode(url)資訊
+   * @param {Object} param 參數
+   * @param {String} id 使用者序號
+   * @returns
+   */
+  getQRcode({ id }) {
+    return REST.post(`${baseURL}/qrcode`, { id });
   },
 };
