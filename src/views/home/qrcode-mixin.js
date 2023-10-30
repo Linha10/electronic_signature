@@ -1,4 +1,4 @@
-import { isEmpty } from "lodash";
+import { isEmpty, isFunction } from "lodash";
 import qrcodeApi from "@/api/qrcode-api";
 export default {
   data() {
@@ -15,27 +15,35 @@ export default {
   methods: {
     /**
      * 連線至socket.io
+     *
+     * @param {Function} done 取得簽名後續處理方法
      */
-    async initConnect() {
+    async initConnect(done) {
       // 開啟socket.io連線
       this.$socket.connect();
       // 建立房間
       this.$socket.emit("createRoom", this.userId);
-      this.$socket.on("capture-signature", (signature) => {
+      this.$socket.on("capture-signature", async (signature) => {
         if (!isEmpty(signature)) {
           this.signatureImage = signature;
+          if (isFunction(done)) {
+            done();
+          }
         }
       });
     },
     /**
-     * 取得QRcode的url
+     * 取得QRcode的url (象徵性)
+     *
+     * @param {String} connectWith 連線方式 (socket.io || sse)
      */
-    getQrUrl() {
+    async getQrUrl(connectWith = "socket.io") {
       // 取得QRcode
-      qrcodeApi
-        .getQRcode({ id: this.userId })
+      await qrcodeApi
+        .getQRcode({ id: this.userId, connectWith: connectWith })
         .then((res) => {
           const { data } = res.data;
+
           this.QRUrl = data.qr_url;
         })
         .catch(() => {});

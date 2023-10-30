@@ -54,13 +54,26 @@
           <template #title>
             <div class="signDialog__header">
               <div class="signDialog__header__label">編輯我的簽名</div>
-              <el-button type="primary" size="mini" @click="handleQRcode"
-                >使用行動裝置簽名</el-button
-              >
-
-              <el-button type="primary" size="mini" @click="handleWindowQRcode"
-                >使用行動裝置簽名-新視窗</el-button
-              >
+              <div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="handleQRcode('socket.io')"
+                  >socket行動裝置簽名</el-button
+                >
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="handleQRcode('sse')"
+                  >SSE行動裝置簽名</el-button
+                >
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="handleWindowQRcode('socket.io')"
+                  >socket行動裝置簽名-新視窗</el-button
+                >
+              </div>
             </div>
           </template>
           <!-- Canvas簽名 -->
@@ -83,6 +96,7 @@
         >
       </div>
     </el-dialog>
+    <!-- QRcode彈窗 -->
     <QrcodeDialog ref="qrcodeDialog" @update="getSignatureByMobile" />
   </div>
 </template>
@@ -93,7 +107,9 @@ import mobile from "is-mobile";
 import QrcodeDialog from "@/views/home/QrcodeDialog";
 import { isEmpty } from "lodash";
 
+// 使用者序號
 const memberId = "terminator-9000";
+
 export default {
   name: "SignatureDisplay",
   components: {
@@ -121,12 +137,16 @@ export default {
   computed: {
     /**
      * 儲存簽名圖檔陣列是否為空
+     *
+     * @returns {Boolean}
      */
     isSignatureImgEmpty() {
       return isEmpty(this.signatureImgList);
     },
     /**
      * 桌機 & 手機版 canvas畫布設定
+     *
+     * @returns {Object}
      */
     canvasSetting() {
       return this.isMobile
@@ -170,9 +190,11 @@ export default {
     },
     /**
      * 開啟QRcode彈窗
+     *
+     * @param {String} connection 連線方式
      */
-    handleQRcode() {
-      this.$refs.qrcodeDialog.openDialog(memberId);
+    async handleQRcode(connection) {
+      this.$refs.qrcodeDialog.openDialog(memberId, connection);
     },
     /**
      * 取得從行動裝置取得的簽名

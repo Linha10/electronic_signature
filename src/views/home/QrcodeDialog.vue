@@ -14,7 +14,7 @@
       foreground="#00a7f2"
     >
     </qrcode-vue>
-
+    {{ QRUrl }}
     <el-divider></el-divider>
     <!-- 讀取QRcode -->
     <QrcodeDropZone @decode="onDecode">
@@ -31,10 +31,11 @@
   </el-dialog>
 </template>
 
-<script>
+<script >
 import QrcodeVue from "qrcode.vue";
 import qrcodeMixin from "@/views/home/qrcode-mixin";
 import { QrcodeDropZone } from "vue-qrcode-reader";
+import sseApi from "@/api/sse-api";
 
 export default {
   name: "QRcodeDialog",
@@ -49,30 +50,91 @@ export default {
       dialogVisible: false,
       // QRcode掃描資料結果
       scanUrl: null,
+      // 連線方式
+      connectWith: "",
+      // sse
+      sseSource: null,
     };
   },
+  computed: {
+    /**
+     * 交換簽名模式 [socket.io , sse]
+     */
+    transmission() {
+      switch (this.connectWith) {
+        case "socket.io":
+          return {
+            // 連線方式
+            connect: this.initConnect,
+            // 斷開連線
+            disconnect: () => {
+              this.$socket.disconnect();
+            },
+          };
 
+        case "sse":
+          return {
+            // 連線方式
+            connect: this.setupSSE,
+            // 斷開連線
+            disconnect: () => {
+              this.sseSource.close();
+            },
+          };
+        default:
+          return null;
+      }
+    },
+  },
   methods: {
     /**
      * 開啟QR-code彈窗
      *
-     * @param {String} memberId
+     * @param {String} memberId 人員序號
+     * @param {String} connection 連接方法
      */
-    openDialog(memberId) {
+    openDialog(memberId, connection) {
       this.userId = memberId;
-      // 連線至socket
-      this.initConnect();
-      this.getQrUrl();
-      // 掃描連接時給予websocket 提示， 關閉此彈窗 > 返回圖片
-      this.dialogVisible = true;
+
+      if (["socket.io", "sse"].includes(connection)) {
+        // 連線至socket
+        this.connectWith = connection;
+        this.transmission.connect(this.done);
+        this.getQrUrl(connection);
+        // 掃描連接時給予websocket 提示， 關閉此彈窗 > 返回圖片
+        this.dialogVisible = true;
+      }
     },
     /**
-     * 開啟/關閉QRcode彈窗顯示狀態
+     * 建立SSE連線
+     */
+    setupSSE() {
+      // 連接至server端
+      this.sseSource = sseApi.connectServer(this.userId);
+
+      // 取得server派發訊息
+      this.sseSource.onmessage = (res) => {
+        const { status, signature } = JSON.parse(res.data);
+        if (status === "success") {
+          this.signatureImage = signature;
+
+          this.done();
+        }
+      };
+    },
+    /**
+     * 開啟/關閉QRcode彈窗顯 示狀態
      */
     handleCloseDialog() {
-      this.$socket.disconnect();
-
+      this.transmission.disconnect();
       this.dialogVisible = false;
+    },
+    /**
+     * 傳遞簽名資料，關閉彈窗
+     */
+    done() {
+      this.handleCloseDialog();
+      this.$emit("update", this.signatureImage);
     },
     /**
      * 取得QRcode資料結果
@@ -81,13 +143,6 @@ export default {
      */
     onDecode(result) {
       this.scanUrl = result;
-    },
-  },
-  watch: {
-    // 監聽取得scoket.io派發的簽名
-    signatureImage: function () {
-      this.handleCloseDialog();
-      this.$emit("update", this.signatureImage);
     },
   },
 };

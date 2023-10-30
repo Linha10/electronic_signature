@@ -52,7 +52,8 @@ import EleSignature from "@/components/EleSignature";
 import Err_cloud_bb from "@/assets/Err_cloud_bb.png";
 import sperate_files from "@/assets/sperate_files.png";
 import apply_success from "@/assets/apply_success.svg";
-
+import sse from "@/api/sse-api";
+import { isEmpty } from "lodash";
 /**
  * 倒數計時器
  */
@@ -84,12 +85,14 @@ export default {
       emitSignatureState: false,
       // 使用者序號
       userId: "",
+      // 連線方式
+      connectWith: "",
       // 當前狀態
       state: {
         // 為錯誤狀態
         isError: false,
         // 內容
-        content: "請切換至行動裝置",
+        content: "請切換至行動裝置或重新掃描QRcode",
         // 代碼
         code: "device-error",
       },
@@ -101,20 +104,92 @@ export default {
       },
     };
   },
+  computed: {
+    /**
+     * 連線功能 (確認連線狀態 、 送出簽名)
+     *
+     * @returns {Object}
+     */
+    connect() {
+      switch (this.connectWith) {
+        case "socket.io":
+          return {
+            // 連線至socket.io
+            checkPermission: () => {
+              // 開啟socket.io連線
+              this.$socket.connect();
+
+              this.$socket.emit("join-room", this.userId);
+              // 加入失敗
+              this.$socket.on("connect-error", (feedback) => {
+                this.state = feedback;
+              });
+            },
+            // 送出簽名
+            sendSignature: (signature) => {
+              this.$socket.emit("send-signature", {
+                image: signature,
+                roomId: this.userId,
+              });
+              // 顯示成功
+              this.emitSignatureState = true;
+              this.$socket.disconnect();
+              // 關閉簽名彈窗
+              this.handleClose();
+            },
+          };
+
+        // SSE連線
+        case "sse":
+          return {
+            // 取得SSE連線
+            checkPermission: () => {
+              sse
+                .checkPermission(this.userId)
+                .then(({ data }) => {
+                  const { permission } = data;
+
+                  if (!permission) {
+                    this.state = data.feedback;
+                  }
+                })
+                .catch(() => {
+                  this.state.isError = true;
+                });
+            },
+            // 送出簽名
+            sendSignature: (signature) => {
+              //
+              sse
+                .sendSignature({ id: this.userId, signature })
+                .then(() => {
+                  // 顯示成功
+                  this.emitSignatureState = true;
+                  // 關閉簽名彈窗
+                  this.handleClose();
+                })
+                .catch(() => {});
+            },
+          };
+        default:
+          return null;
+      }
+    },
+  },
   async created() {
     this.isMobile = mobile({ featureDetect: true, tablet: true });
-    this.userId = this.$route.params.id;
-    await setTimeoutTimer(1000);
-    // 為移動裝置時才進行socket連線
-    if (this.isMobile) {
-      // 開啟socket.io連線
-      this.$socket.connect();
 
-      this.$socket.emit("join-room", this.userId);
-      // 加入失敗
-      this.$socket.on("connect-error", (feedback) => {
-        this.state = feedback;
-      });
+    // 取得使用者序號及連線方式(socket.io|sse)
+    [this.userId, this.connectWith] = [
+      this.$route.params.id,
+      this.$route.params.connect,
+    ];
+
+    await setTimeoutTimer(1000);
+
+    // 為移動裝置時才進行socket連線
+    if (this.isMobile && !isEmpty(this.connect)) {
+      this.connect.checkPermission();
       this.isLoading = false;
     } else {
       this.state.isError = true;
@@ -142,14 +217,7 @@ export default {
 
         if (!isEmptyCanvas) {
           const rotateSignatue = signatue.getRotateCanvas(-90).toDataURL();
-
-          this.$socket.emit("send-signature", {
-            image: rotateSignatue,
-            roomId: this.userId,
-          });
-          this.emitSignatureState = true;
-
-          this.handleClose();
+          this.connect.sendSignature(rotateSignatue);
         }
       });
       this.isLoading = false;

@@ -19,7 +19,7 @@ const routes = [
   },
   {
     name: "mobileSignature",
-    path: "/mobile/signature/:id?",
+    path: "/mobile/signature/:id?/:connect?",
     component: MobileSignature,
   },
 ];
