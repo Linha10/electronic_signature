@@ -52,14 +52,13 @@ export default {
      */
     init() {
       this.userId = this.$route.params.id;
-      this.initConnect();
+      this.initConnect(this.done);
       this.getQrUrl();
     },
-  },
-  watch: {
-    // 監聽取得scoket.io派發的簽名
-    signatureImage: function () {
-      // 回傳給
+    /**
+     * 完成簽名，關閉分頁
+     */
+    done() {
       window.opener.postMessage(
         {
           signatureImage: this.signatureImage,
