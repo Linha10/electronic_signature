@@ -2,6 +2,7 @@
   "name": "electronic_signature",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://linha10.github.io/electronic_signature/",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
