@@ -109,6 +109,8 @@ import { isEmpty } from "lodash";
 
 // 使用者序號
 const memberId = "terminator-9000";
+// 網頁url
+const envURL = `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}`;
 
 export default {
   name: "SignatureDisplay",
@@ -209,7 +211,7 @@ export default {
      */
     handleWindowQRcode() {
       this.childWindow = window.open(
-        `http://localhost:8080/window/qrcode/${memberId}`,
+        `${envURL}/window/qrcode/${memberId}`,
         "QRcode",
         "popup,width=500,height=500"
       );

@@ -1,7 +1,9 @@
 import RequestHttp from "@/api/common-api";
+import { baseURL } from "@/api/api-settings";
 
-const REST = new RequestHttp();
-const baseURL = "http://localhost:3000";
+const REST = new RequestHttp({
+  baseURL: baseURL,
+});
 
 export default {
   /**
@@ -19,7 +21,7 @@ export default {
    * @returns {Promise}
    */
   sendSignature(param) {
-    return REST.post(`${baseURL}/sse/send-data`, param);
+    return REST.post(`sse/send-data`, param);
   },
   /**
    * 確認是否擁有權限開啟簽名
@@ -27,6 +29,6 @@ export default {
    * @returns {Promise}
    */
   checkPermission(id) {
-    return REST.get(`${baseURL}/sse/check?userId=${id}`);
+    return REST.get(`sse/check?userId=${id}`);
   },
 };

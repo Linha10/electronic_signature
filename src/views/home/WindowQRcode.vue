@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :key="key">
     <p>掃描QR CODE</p>
     <!-- 簽名用QRcode -->
     <qrcode-vue
@@ -10,7 +10,7 @@
     >
     </qrcode-vue>
 
-    {{ this.userId }}
+    {{ this.QRUrl }}
     <el-divider></el-divider>
     <div>
       <div>NUEiP官網</div>
@@ -41,6 +41,7 @@ export default {
     return {
       // 官網QRcode背景圖
       img: nueipAutumnFestival,
+      key: 0,
     };
   },
   created() {
@@ -50,10 +51,11 @@ export default {
     /**
      * 取得QRcode設定
      */
-    init() {
+    async init() {
       this.userId = this.$route.params.id;
       this.initConnect(this.done);
-      this.getQrUrl();
+      await this.getQrUrl();
+      this.key++;
     },
     /**
      * 完成簽名，關閉分頁

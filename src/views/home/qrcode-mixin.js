@@ -44,7 +44,7 @@ export default {
         .then((res) => {
           const { data } = res.data;
 
-          this.QRUrl = data.qr_url;
+          this.QRUrl = `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}/mobile/signature/${data.qr_url}`;
         })
         .catch(() => {});
     },

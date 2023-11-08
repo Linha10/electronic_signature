@@ -1,7 +1,9 @@
 import RequestHttp from "@/api/common-api";
+import { baseURL } from "@/api/api-settings";
 
-const REST = new RequestHttp();
-const baseURL = "http://localhost:3000";
+const REST = new RequestHttp({
+  baseURL: baseURL,
+});
 
 export default {
   /**
@@ -12,6 +14,6 @@ export default {
    * @returns
    */
   getQRcode({ id, connectWith }) {
-    return REST.post(`${baseURL}/qrcode`, { id, connectWith });
+    return REST.post(`/qrcode`, { id, connectWith });
   },
 };
