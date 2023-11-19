@@ -10,7 +10,7 @@ import { socketURL } from "@/api/api-settings";
 const socketOptions = {
   autoConnect: false,
 };
-
+console.log("socketURL", socketURL);
 const socket = io(socketURL, socketOptions);
 
 Vue.prototype.$socket = socket;
