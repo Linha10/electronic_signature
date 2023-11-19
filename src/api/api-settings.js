@@ -7,5 +7,5 @@ export const baseURL = `${process.env.VUE_APP_BASE_API}${
 
 // socket.io
 export const socketURL = `${process.env.VUE_APP_BASE_API}${
-  !isProduction ? `:${process.env.VUE_APP_SOCKET_PORT}/#/` : ""
+  !isProduction ? `:${process.env.VUE_APP_SOCKET_PORT}` : ""
 }`;
