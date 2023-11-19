@@ -1,5 +1,6 @@
 import { isEmpty, isFunction } from "lodash";
 import qrcodeApi from "@/api/qrcode-api";
+import { isProduction } from "@/api/api-settings";
 export default {
   data() {
     return {
@@ -43,8 +44,11 @@ export default {
         .getQRcode({ id: this.userId, connectWith: connectWith })
         .then((res) => {
           const { data } = res.data;
+          const head = !isProduction
+            ? `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}/#`
+            : `${process.env.VUE_APP_BASE_URL}`;
 
-          this.QRUrl = `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}/mobile/signature/${data.qr_url}`;
+          this.QRUrl = `${head}/mobile/signature/${data.qr_url}`;
         })
         .catch(() => {});
     },

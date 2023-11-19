@@ -1,4 +1,4 @@
-const isProduction = ["production"].includes(process.env.NODE_ENV);
+export const isProduction = ["production"].includes(process.env.NODE_ENV);
 
 // APIs
 export const baseURL = `${process.env.VUE_APP_BASE_API}${
