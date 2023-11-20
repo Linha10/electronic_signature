@@ -24,7 +24,9 @@ export default {
       this.$socket.connect();
       // 建立房間
       this.$socket.emit("createRoom", this.userId);
-      this.$socket.on("capture-signature", async (signature) => {
+
+      this.$socket.on("capture-signature", (signature) => {
+        console.log("signature", signature);
         if (!isEmpty(signature)) {
           this.signatureImage = signature;
           if (isFunction(done)) {
@@ -39,6 +41,7 @@ export default {
      * @param {String} connectWith 連線方式 (socket.io || sse)
      */
     async getQrUrl(connectWith = "socket.io") {
+      //TODO loading
       // 取得QRcode
       await qrcodeApi
         .getQRcode({ id: this.userId, connectWith: connectWith })

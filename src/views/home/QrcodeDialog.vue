@@ -93,14 +93,14 @@ export default {
      * @param {String} memberId 人員序號
      * @param {String} connection 連接方法
      */
-    openDialog(memberId, connection) {
+    async openDialog(memberId, connection) {
       this.userId = memberId;
 
       if (["socket.io", "sse"].includes(connection)) {
         // 連線至socket
         this.connectWith = connection;
         this.transmission.connect(this.done);
-        this.getQrUrl(connection);
+        await this.getQrUrl(connection);
         // 掃描連接時給予websocket 提示， 關閉此彈窗 > 返回圖片
         this.dialogVisible = true;
       }
