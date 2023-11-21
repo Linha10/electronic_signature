@@ -133,6 +133,7 @@ export default {
               });
               // 顯示成功
               this.emitSignatureState = true;
+              this.$socket.disconnect();
               // 關閉簽名彈窗
               this.handleClose();
             },
