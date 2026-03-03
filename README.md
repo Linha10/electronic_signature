@@ -8,7 +8,7 @@
 
 - 在QRcode圖片放入下方的空白格內，會產生QRcode對應的資料
 - 
-![Dialog式QRcode](https://cdn.discordapp.com/attachments/677538517949218820/1154360421864722512/2023-09-21_6.07.23.png?ex=69a8066b&is=69a6b4eb&hm=158f5812c699fe61c564557f48ada0a409a2dec3caacf5a105e5b28cadf17adf&)
+![Dialog式QRcode](https://cdn.discordapp.com/attachments/677538517949218820/1154360401740451840/2023-09-21_6.05.02.png?ex=69a80666&is=69a6b4e6&hm=1c788ec9fd9b73151f6433dba2203c59a20fc66c2cfd3ccaaa5caf714ee67642&)
 
 ## 新視窗式QRcode
 
